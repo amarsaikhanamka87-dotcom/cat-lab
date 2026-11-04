@@ -1,3 +1,5 @@
 {
+  "/(components)/label/page": "app/(components)/label/page.js",
+  "/api/photos/route": "app/api/photos/route.js",
   "/page": "app/page.js"
 }
