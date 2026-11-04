@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 19, "column": 0}, "map": {"version":3,"sources":["file:///Users/amka/Desktop/cat-lab-build-learning/my-app/app/favicon.ico.mjs%20(structured%20image%20object)"],"sourcesContent":["import src from \"IMAGE\";\nexport default { src, width: 48, height: 48 }\n"],"names":["src","width","height"],"mappings":";;;;AAAA;;uCACe;IAAEA,KAAAA,mIAAG;IAAEC,OAAO;IAAIC,QAAQ;AAAG"}},
+    {"offset": {"line": 34, "column": 0}, "map": {"version":3,"sources":["file:///Users/amka/Desktop/cat-lab-build-learning/my-app/app/page.tsx"],"sourcesContent":["import { UploadIcon } from \"./_icons\";\nexport default function Home() {\n  return (\n    <div className=\"flex flex-col items-center justify-center min-h-screen py-2\">\n      <div\n        className=\"border border-gray-300 rounded-md p-4 w-200 h-100\n       flex items-center justify-center\"\n      >\n        <UploadIcon />\n        <input />\n      </div>\n      <button className=\"mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\">\n        Next: Label photos\n      </button>\n    </div>\n  );\n}\n"],"names":["Home","className","UploadIcon"],"mappings":";;;;;;;;;;;;AACe,SAASA;IACtB,qBACE,8OAAC;QAAIC,WAAU;;0BACb,8OAAC;gBACCA,WAAU;;kCAGV,8OAACC;;;;;kCACD,8OAAC;;;;;;;;;;;0BAEH,8OAAC;gBAAOD,WAAU;0BAA4E;;;;;;;;;;;;AAKpG"}}]
+}
