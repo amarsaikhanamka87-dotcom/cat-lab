@@ -12,18 +12,15 @@ datasource db {
   provider = "postgresql"
 }
 
-
 enum Ground {
   training
   testing
 }
 
-
 enum Label {
   CAT
-   NOT_CAT
+  NOT_CAT
 }
-
 
 enum Status {
   ACTIVE
@@ -31,13 +28,11 @@ enum Status {
 }
 
 
+
 model Photo {
-  id String @id @default(uuid())
-storagePath String @unique
-  label Label?  
-  ground Ground @default(training)
-  creativeAt DateTime @default(now())
-
+  id          String   @id @default(uuid())
+  storagePath String   @unique
+  label       Label?
+  ground      Ground    @default(training)
+  creativeAt  DateTime @default(now())
 }
-
-

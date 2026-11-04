@@ -1,24 +1,36 @@
-import { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/_lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function GET() {
-  const photos = await prisma.photo.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  const photos = await prisma.photo.findMany({});
 
-  return NextRequest.json(photos);
+  return NextResponse.json(photos);
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  console.log("POST body:", body);
+  try {
+    const formData = await request.formData();
+    const file = formData.get("files");
 
-  const photo = await prisma.photo.create({
-    data: {
-      url: body.url,
-      label: body.label,
-    },
-  });
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    }
+
+    const storagePath = `/uploads/${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+
+    const photo = await prisma.photo.create({
+      data: {
+        storagePath,
+        label: null,
+        ground: "training",
+      },
+    });
+
+    return NextResponse.json({ success: true, photo });
+  } catch (error) {
+    console.error("Upload error:", error);
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: Request) {
