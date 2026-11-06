@@ -80,14 +80,18 @@ __turbopack_context__.s([
     ()=>prisma
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$prisma$2f$adapter$2d$pg$2f$dist$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@prisma/adapter-pg/dist/index.mjs [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client$2f$extension__$5b$external$5d$__$2840$prisma$2f$client$2f$extension$2c$__cjs$2c$__$5b$project$5d2f$node_modules$2f40$prisma$2f$client$29$__ = __turbopack_context__.i("[externals]/@prisma/client/extension [external] (@prisma/client/extension, cjs, [project]/node_modules/@prisma/client)");
+(()=>{
+    const e = new Error("Cannot find module '../generated/prisma/client'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
 var __turbopack_async_dependencies__ = __turbopack_handle_async_dependencies__([
     __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$prisma$2f$adapter$2d$pg$2f$dist$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__
 ]);
 [__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$prisma$2f$adapter$2d$pg$2f$dist$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__] = __turbopack_async_dependencies__.then ? (await __turbopack_async_dependencies__)() : __turbopack_async_dependencies__;
 ;
 ;
-const createClient = ()=>new __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client$2f$extension__$5b$external$5d$__$2840$prisma$2f$client$2f$extension$2c$__cjs$2c$__$5b$project$5d2f$node_modules$2f40$prisma$2f$client$29$__["PrismaClient"]({
+const createClient = ()=>new PrismaClient({
         adapter: new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$prisma$2f$adapter$2d$pg$2f$dist$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__["PrismaPg"]({
             connectionString: process.env["DATABASE_URL"]
         })
@@ -120,23 +124,40 @@ var __turbopack_async_dependencies__ = __turbopack_handle_async_dependencies__([
 ;
 ;
 async function GET() {
-    const photos = await __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$_lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].photo.findMany({
-        orderBy: {
-            createdAt: "desc"
-        }
-    });
+    const photos = await __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$_lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].photo.findMany({});
     return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(photos);
 }
 async function POST(request) {
-    console.log("POST request received");
-    const body = await request.json();
-    console.log("POST body:", body);
-    const photo = await __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$_lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].photo.create({
-        data: {
-            url: body.url,
-            label: body.label
+    try {
+        const formData = await request.formData();
+        const file = formData.get("files");
+        if (!(file instanceof File)) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                error: "No file uploaded"
+            }, {
+                status: 400
+            });
         }
-    });
+        const storagePath = `/uploads/${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+        const photo = await __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$_lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].photo.create({
+            data: {
+                storagePath,
+                label: null,
+                ground: "training"
+            }
+        });
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            success: true,
+            photo
+        });
+    } catch (error) {
+        console.error("Upload error:", error);
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            error: "Upload failed"
+        }, {
+            status: 500
+        });
+    }
 }
 async function PATCH(request) {
     const body = await request.json();

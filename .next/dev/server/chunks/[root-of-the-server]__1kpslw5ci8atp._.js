@@ -53,32 +53,40 @@ async function GET() {
     return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(photos);
 }
 async function POST(request) {
+    let body;
     try {
-        const formData = await request.formData();
-        const file = formData.get("files");
-        if (!(file instanceof File)) {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                error: "No file uploaded"
-            }, {
-                status: 400
-            });
-        }
-        const storagePath = `/uploads/${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+        body = await request.json();
+        console.log("POST body:", body);
+    } catch (error) {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            error: "Request body must be valid JSON"
+        }, {
+            status: 400
+        });
+    }
+    if (typeof body.storagePath !== "string" || body.storagePath.trim() === "") {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            error: "storagePath is required"
+        }, {
+            status: 400
+        });
+    }
+    try {
         const photo = await __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$_lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].photo.create({
             data: {
-                storagePath,
-                label: null,
-                ground: "training"
+                storagePath: body.storagePath
             }
         });
+        console.log("Photo created:", photo);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-            success: true,
             photo
+        }, {
+            status: 201
         });
     } catch (error) {
-        console.error("Upload error:", error);
+        console.error("Photo database error:", error);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-            error: "Upload failed"
+            error: "Could not save photo. Check the database connection."
         }, {
             status: 500
         });

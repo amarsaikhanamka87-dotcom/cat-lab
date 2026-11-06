@@ -1,6 +1,19 @@
-{"timestamp":"00:00:00.361","source":"Server","level":"LOG","message":"- Experiments (use with caution):"}
-{"timestamp":"00:00:00.361","source":"Server","level":"LOG","message":"  ✓ agentFeedback"}
-{"timestamp":"00:00:00.361","source":"Server","level":"LOG","message":""}
-{"timestamp":"00:00:01.783","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
-{"timestamp":"00:00:03.019","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
-{"timestamp":"00:00:32.741","source":"Browser","level":"LOG","message":"Photo uploaded successfully: {\"photo\":{\"creativeAt\":\"2026-11-04T09:53:56.354Z\",\"ground\":\"training\",\"id\":\"c903e39d-026f-4bb6-a1aa-01f101b0c123\",\"label\":null,\"storagePath\":\"/uploads/1793786036302-images-(1).jpeg\"},\"success\":true}"}
+{"timestamp":"00:00:00.327","source":"Server","level":"LOG","message":"- Experiments (use with caution):"}
+{"timestamp":"00:00:00.327","source":"Server","level":"LOG","message":"  ✓ agentFeedback"}
+{"timestamp":"00:00:00.327","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:01.136","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:00:11.524","source":"Server","level":"ERROR","message":"Error: Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env"}
+{"timestamp":"00:00:11.534","source":"Browser","level":"ERROR","message":"Error uploading photo: Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env \n    at <unknown> (app/(components)/upload/page.tsx:56:19)\n    at async uploadFiles (app/(components)/upload/page.tsx:44:5)\n  \u001b[90m54 |\u001b[0m             ? (err.response?.data?.error ?? err.message)\n  \u001b[90m55 |\u001b[0m             : \u001b[32m\"Upload failed\"\u001b[0m;\n\u001b[31m\u001b[1m>\u001b[0m \u001b[90m56 |\u001b[0m           console.error(\u001b[32m\"Error uploading photo:\"\u001b[0m, message);\n  \u001b[90m   |\u001b[0m                   \u001b[31m\u001b[1m^\u001b[0m\n  \u001b[90m57 |\u001b[0m           updateItem(id, { status: \u001b[32m\"error\"\u001b[0m, error: message });\n  \u001b[90m58 |\u001b[0m         }\n  \u001b[90m59 |\u001b[0m       }), (app/(components)"}
+{"timestamp":"00:00:11.534","source":"Server","level":"ERROR","message":"[browser] \"Error uploading photo:\" \"Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env\" \"\\n\\u001b[31m    at <unknown> (app/(components)/upload/page.tsx:56:19)\\n    at async uploadFiles (app/(components)/upload/page.tsx:44:5)\\u001b[39m\\n  \\u001b[90m54 |\\u001b[0m             ? (err.response?.data?.error ?? err.message)\\n  \\u001b[90m55 |\\u001b[0m             : \\u001b[32m\\\"Upload failed\\\"\\u001b[0m;\\n\\u001b[31m\\u001b[1m>\\u001b[0m \\u001b[90m56 |\\u001b[0m           console.error(\\u001b[32m\\\"Error uploading photo:\\\"\\u001b[0m, message);\\n  \\u001b[90m   |\\u001b[0m                   \\u001b[31m\\u001b[1m^\\u001b[0m\\n  \\u001b[90m57 |\\u001b[0m           updateItem(id, { status: \\u001b[32m\\\"error\\\"\\u001b[0m, error: message });\\n  \\u001b[90m58 |\\u001b[0m         }\\n  \\u001b[90m59 |\\u001b[0m       }),\" \"\\u001b[2m(app/(components)\\u001b[22m\""}
+{"timestamp":"00:01:06.215","source":"Server","level":"LOG","message":"  Reload env: .env"}
+{"timestamp":"00:01:13.035","source":"Server","level":"LOG","message":"✓ Compiled in 163ms"}
+{"timestamp":"00:06:33.732","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:19:14.816","source":"Server","level":"LOG","message":"✓ Compiled in 29ms"}
+{"timestamp":"00:19:28.874","source":"Server","level":"LOG","message":"✓ Compiled in 31ms"}
+{"timestamp":"01:02:47.477","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:05:51.182","source":"Server","level":"LOG","message":"✓ Compiled in 28ms"}
+{"timestamp":"01:07:05.060","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:09:14.290","source":"Server","level":"LOG","message":"✓ Compiled in 63ms"}
+{"timestamp":"01:10:05.619","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:11:16.612","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:11:38.715","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}

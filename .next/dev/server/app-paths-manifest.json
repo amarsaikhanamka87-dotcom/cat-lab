@@ -1,5 +1,8 @@
 {
   "/(components)/label/page": "app/(components)/label/page.js",
+  "/(components)/test/page": "app/(components)/test/page.js",
+  "/(components)/train/page": "app/(components)/train/page.js",
+  "/(components)/upload/page": "app/(components)/upload/page.js",
   "/api/photos/route": "app/api/photos/route.js",
   "/page": "app/page.js"
 }

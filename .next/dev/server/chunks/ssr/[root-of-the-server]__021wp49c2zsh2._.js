@@ -35,239 +35,321 @@ const steps = [
 function Upload() {
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     const fileInputRef = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useRef(null);
-    const handleFileChange = async (event)=>{
-        const files = Array.from(event.target.files ?? []);
+    const [items, setItems] = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useState([]);
+    const [dragging, setDragging] = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].useState(false);
+    const updateItem = (id, patch)=>setItems((prev)=>prev.map((it)=>it.id === id ? {
+                    ...it,
+                    ...patch
+                } : it));
+    const uploadFiles = async (fileList)=>{
+        const files = Array.from(fileList).filter((f)=>f.type.startsWith("image/"));
         if (files.length === 0) return;
-        try {
+        const newItems = files.map((file)=>({
+                id: crypto.randomUUID(),
+                name: file.name,
+                preview: URL.createObjectURL(file),
+                status: "uploading"
+            }));
+        setItems((prev)=>[
+                ...newItems,
+                ...prev
+            ]);
+        await Promise.all(files.map(async (file, i)=>{
+            const id = newItems[i].id;
             const formData = new FormData();
-            files.forEach((file)=>formData.append("files", file));
-            const response = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].post("/api/photos", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data"
-                }
-            });
-            console.log("Photo uploaded successfully:", response.data);
-        } catch (error) {
-            console.error("Error uploading photo:", error);
-        }
+            formData.append("file", file);
+            try {
+                const { data } = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].post("/api/photos", formData);
+                updateItem(id, {
+                    status: "done",
+                    url: data.photo.storagePath
+                });
+            } catch (err) {
+                const message = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].isAxiosError(err) ? err.response?.data?.error ?? err.message : "Upload failed";
+                console.error("Error uploading photo:", message);
+                updateItem(id, {
+                    status: "error",
+                    error: message
+                });
+            }
+        }));
     };
-    const handleClick = ()=>{
-        router.push("/label");
+    const handleFileChange = (event)=>{
+        if (event.target.files) uploadFiles(event.target.files);
+        event.target.value = ""; // allow re-selecting the same file
     };
-    const addPhoto = ()=>{
-        fileInputRef.current?.click();
+    const handleDrop = (event)=>{
+        event.preventDefault();
+        setDragging(false);
+        uploadFiles(event.dataTransfer.files);
     };
+    const uploading = items.some((it)=>it.status === "uploading");
+    const doneCount = items.filter((it)=>it.status === "done").length;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "min-h-screen bg-[var(--page-bg)] px-4 py-6 sm:px-6 lg:px-10",
+        className: "min-h-screen w-full bg-[var(--page-bg)] px-4 py-6 sm:px-6 lg:px-10",
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "mx-auto max-w-6xl rounded-[24px] border border-[var(--surface-border)] bg-[var(--surface-card)] p-5 sm:p-6 lg:p-8",
-            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "rounded-[16px] border border-[var(--surface-border)] bg-[var(--surface-card-strong)] p-5 sm:p-6 lg:p-8",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "mb-8 flex flex-col gap-4",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "text-left",
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                    className: "font-bold uppercase tracking-[0.12em] text-[11px] sm:text-[14px] text-[var(--primary)]",
-                                    children: "part 3 · training ground"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(components)/upload/page.tsx",
-                                    lineNumber: 55,
-                                    columnNumber: 15
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/app/(components)/upload/page.tsx",
-                                lineNumber: 54,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between",
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                                    className: "font-display text-[30px] leading-none tracking-[-0.04em] text-[var(--text)] sm:text-[40px]",
-                                    children: "Upload training images"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(components)/upload/page.tsx",
-                                    lineNumber: 61,
-                                    columnNumber: 15
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/app/(components)/upload/page.tsx",
-                                lineNumber: 60,
-                                columnNumber: 13
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/app/(components)/upload/page.tsx",
-                        lineNumber: 53,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "mb-8 flex items-start justify-center sm:justify-between",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex w-full max-w-2xl items-center justify-between gap-2 sm:gap-4",
-                            children: steps.map((step, index)=>{
-                                const isActive = index === 0;
-                                const isCompleted = index < 1;
-                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex flex-1 flex-col items-center justify-center gap-2",
+            className: "mx-auto max-w-5xl rounded-[24px] border border-[var(--surface-border)] bg-[var(--surface-card-strong)] p-5 shadow-sm sm:p-8",
+            children: [
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("header", {
+                    className: "mb-8 flex flex-col gap-2",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            className: "text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--primary)] sm:text-[13px]",
+                            children: "part 3 · training ground"
+                        }, void 0, false, {
+                            fileName: "[project]/app/(components)/upload/page.tsx",
+                            lineNumber: 82,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
+                            className: "font-display text-[30px] leading-tight tracking-[-0.03em] text-[var(--text)] sm:text-[40px]",
+                            children: "Upload training images"
+                        }, void 0, false, {
+                            fileName: "[project]/app/(components)/upload/page.tsx",
+                            lineNumber: 85,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/(components)/upload/page.tsx",
+                    lineNumber: 81,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ol", {
+                    className: "mb-8 flex w-full max-w-xl items-center",
+                    children: steps.map((step, index)=>{
+                        const isActive = index === 0;
+                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                            className: "flex flex-1 items-center last:flex-none",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex flex-col items-center gap-2",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: [
-                                                "flex h-11 w-11 items-center justify-center rounded-full border text-sm font-extrabold transition-all sm:h-14 sm:w-14 sm:text-base",
-                                                isActive ? "border-transparent bg-[var(--primary)] text-white" : isCompleted ? "border-transparent bg-[var(--primary)] text-white" : "border-[3px] border-[var(--surface-border)] bg-white text-[var(--muted)]"
+                                                "flex h-11 w-11 items-center justify-center rounded-full text-sm font-extrabold sm:h-12 sm:w-12 sm:text-base",
+                                                isActive ? "bg-[var(--primary)] text-white" : "border-2 border-[var(--surface-border)] bg-[var(--surface-card)] text-[var(--muted)]"
                                             ].join(" "),
-                                            children: isCompleted ? "✓" : step.number
+                                            children: step.number
                                         }, void 0, false, {
                                             fileName: "[project]/app/(components)/upload/page.tsx",
-                                            lineNumber: 78,
-                                            columnNumber: 21
+                                            lineNumber: 97,
+                                            columnNumber: 19
                                         }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "hidden text-center sm:block",
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: [
-                                                    "text-[11px] font-bold uppercase tracking-[0.08em]",
-                                                    isActive || isCompleted ? "text-[var(--text)]" : "text-[var(--muted)]"
-                                                ].join(" "),
-                                                children: step.label
-                                            }, void 0, false, {
-                                                fileName: "[project]/app/(components)/upload/page.tsx",
-                                                lineNumber: 92,
-                                                columnNumber: 23
-                                            }, this)
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: [
+                                                "text-[11px] font-bold uppercase tracking-[0.08em]",
+                                                isActive ? "text-[var(--text)]" : "text-[var(--muted)]"
+                                            ].join(" "),
+                                            children: step.label
                                         }, void 0, false, {
                                             fileName: "[project]/app/(components)/upload/page.tsx",
-                                            lineNumber: 91,
+                                            lineNumber: 106,
+                                            columnNumber: 19
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/(components)/upload/page.tsx",
+                                    lineNumber: 96,
+                                    columnNumber: 17
+                                }, this),
+                                index < steps.length - 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "mx-2 mb-6 h-[2px] flex-1 bg-[var(--surface-border)]"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/(components)/upload/page.tsx",
+                                    lineNumber: 115,
+                                    columnNumber: 19
+                                }, this)
+                            ]
+                        }, step.number, true, {
+                            fileName: "[project]/app/(components)/upload/page.tsx",
+                            lineNumber: 95,
+                            columnNumber: 15
+                        }, this);
+                    })
+                }, void 0, false, {
+                    fileName: "[project]/app/(components)/upload/page.tsx",
+                    lineNumber: 91,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    role: "button",
+                    tabIndex: 0,
+                    onClick: ()=>fileInputRef.current?.click(),
+                    onKeyDown: (e)=>{
+                        if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click();
+                    },
+                    onDragOver: (e)=>{
+                        e.preventDefault();
+                        setDragging(true);
+                    },
+                    onDragLeave: ()=>setDragging(false),
+                    onDrop: handleDrop,
+                    className: [
+                        "flex min-h-[240px] cursor-pointer flex-col items-center justify-center rounded-[20px] border-[3px] border-dashed px-5 py-8 text-center transition-colors sm:min-h-[280px]",
+                        dragging ? "border-[var(--primary)] bg-[var(--info-bg)]" : "border-[var(--surface-dashed)] bg-[var(--surface-card)] hover:border-[var(--primary)] hover:bg-[var(--info-bg)]"
+                    ].join(" "),
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            ref: fileInputRef,
+                            type: "file",
+                            onChange: handleFileChange,
+                            accept: "image/*",
+                            multiple: true,
+                            className: "hidden"
+                        }, void 0, false, {
+                            fileName: "[project]/app/(components)/upload/page.tsx",
+                            lineNumber: 142,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--info-bg)] text-[var(--primary)]",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$app$2f$_icons$2f$uplaod$2d$icon$2e$jsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["UploadIcon"], {}, void 0, false, {
+                                fileName: "[project]/app/(components)/upload/page.tsx",
+                                lineNumber: 151,
+                                columnNumber: 13
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "[project]/app/(components)/upload/page.tsx",
+                            lineNumber: 150,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                            className: "font-display text-[22px] leading-none tracking-[-0.03em] text-[var(--text)] sm:text-[26px]",
+                            children: "Upload your photos"
+                        }, void 0, false, {
+                            fileName: "[project]/app/(components)/upload/page.tsx",
+                            lineNumber: 153,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            className: "mt-3 max-w-md text-[15px] text-[var(--muted)] sm:text-[17px]",
+                            children: "Click or drag & drop cat images here to begin training."
+                        }, void 0, false, {
+                            fileName: "[project]/app/(components)/upload/page.tsx",
+                            lineNumber: 156,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/(components)/upload/page.tsx",
+                    lineNumber: 123,
+                    columnNumber: 9
+                }, this),
+                items.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
+                    className: "mt-6",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            className: "mb-3 text-[14px] font-bold text-[var(--muted)]",
+                            children: [
+                                doneCount,
+                                " of ",
+                                items.length,
+                                " uploaded"
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/(components)/upload/page.tsx",
+                            lineNumber: 164,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
+                            className: "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5",
+                            children: items.map((it)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                                    className: "relative overflow-hidden rounded-[12px] border border-[var(--surface-border)] bg-[var(--surface-card)]",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                                            src: it.url ?? it.preview,
+                                            alt: it.name,
+                                            className: [
+                                                "aspect-square w-full object-cover",
+                                                it.status === "uploading" ? "opacity-50" : ""
+                                            ].join(" ")
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/(components)/upload/page.tsx",
+                                            lineNumber: 173,
+                                            columnNumber: 19
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: [
+                                                "absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-bold text-white",
+                                                it.status === "done" ? "bg-green-600" : it.status === "error" ? "bg-red-600" : "bg-[var(--primary)]"
+                                            ].join(" "),
+                                            children: it.status === "done" ? "Saved" : it.status === "error" ? "Failed" : "Uploading…"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/(components)/upload/page.tsx",
+                                            lineNumber: 181,
+                                            columnNumber: 19
+                                        }, this),
+                                        it.error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                            className: "px-2 py-1 text-[11px] leading-tight text-red-600",
+                                            children: it.error
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/(components)/upload/page.tsx",
+                                            lineNumber: 193,
                                             columnNumber: 21
                                         }, this)
                                     ]
-                                }, step.number, true, {
+                                }, it.id, true, {
                                     fileName: "[project]/app/(components)/upload/page.tsx",
-                                    lineNumber: 74,
-                                    columnNumber: 19
-                                }, this);
-                            })
+                                    lineNumber: 169,
+                                    columnNumber: 17
+                                }, this))
                         }, void 0, false, {
                             fileName: "[project]/app/(components)/upload/page.tsx",
-                            lineNumber: 68,
+                            lineNumber: 167,
                             columnNumber: 13
                         }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/(components)/upload/page.tsx",
+                    lineNumber: 163,
+                    columnNumber: 11
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "mt-6 rounded-[12px] bg-[var(--info-bg)] px-5 py-4 text-[15px] text-[var(--text)]",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                            className: "font-extrabold text-[var(--primary)]",
+                            children: "Tip:"
+                        }, void 0, false, {
+                            fileName: "[project]/app/(components)/upload/page.tsx",
+                            lineNumber: 202,
+                            columnNumber: 11
+                        }, this),
+                        " Use clear, well-lit images to help the model learn faster."
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/(components)/upload/page.tsx",
+                    lineNumber: 201,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "mt-6 flex justify-end",
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        type: "button",
+                        onClick: ()=>router.push("/label"),
+                        disabled: uploading || doneCount === 0,
+                        className: "inline-flex items-center justify-center rounded-[12px] bg-[var(--primary)] px-6 py-3 text-[16px] font-extrabold text-white transition-colors hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50",
+                        children: uploading ? "Uploading…" : "Next: Label photos"
                     }, void 0, false, {
                         fileName: "[project]/app/(components)/upload/page.tsx",
-                        lineNumber: 67,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "rounded-[16px] border border-[var(--surface-border)] bg-[var(--surface-card-strong)] p-4 sm:p-6",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                onClick: addPhoto,
-                                className: "group flex min-h-[260px] cursor-pointer flex-col items-center justify-center rounded-[20px] border-[3px] border-dashed border-[var(--surface-dashed)] bg-[#f8f9ff] px-5 py-8 text-center transition-colors duration-200 hover:border-[var(--primary)] hover:bg-[#f7f8ff] focus-within:border-[var(--primary)] focus-within:bg-[#f7f8ff] sm:min-h-[300px]",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                        ref: fileInputRef,
-                                        type: "file",
-                                        onChange: handleFileChange,
-                                        accept: "image/*",
-                                        multiple: true,
-                                        className: "hidden"
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/(components)/upload/page.tsx",
-                                        lineNumber: 114,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--info-bg)] text-[var(--primary)]",
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$app$2f$_icons$2f$uplaod$2d$icon$2e$jsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["UploadIcon"], {}, void 0, false, {
-                                            fileName: "[project]/app/(components)/upload/page.tsx",
-                                            lineNumber: 124,
-                                            columnNumber: 17
-                                        }, this)
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/(components)/upload/page.tsx",
-                                        lineNumber: 123,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                                        className: "font-display text-[22px] leading-none tracking-[-0.04em] text-[var(--text)] sm:text-[26px]",
-                                        children: "Upload your photos"
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/(components)/upload/page.tsx",
-                                        lineNumber: 127,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "mt-3 max-w-md text-[16px] text-[var(--muted)] sm:text-[20px]",
-                                        children: "Drop a few cat images here to begin training."
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/(components)/upload/page.tsx",
-                                        lineNumber: 130,
-                                        columnNumber: 15
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/app/(components)/upload/page.tsx",
-                                lineNumber: 110,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "mt-6 rounded-[12px] bg-[var(--info-bg)] px-5 py-4 text-[15px] text-[var(--text)] sm:text-[16px]",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-extrabold text-[var(--primary)]",
-                                        children: "Tip:"
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/(components)/upload/page.tsx",
-                                        lineNumber: 136,
-                                        columnNumber: 15
-                                    }, this),
-                                    " ",
-                                    "Use clear, well-lit images to help the model learn faster."
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/app/(components)/upload/page.tsx",
-                                lineNumber: 135,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "mt-6 flex justify-end",
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    type: "button",
-                                    onClick: handleClick,
-                                    className: "inline-flex items-center justify-center rounded-[12px] bg-[var(--primary)] px-6 py-3 text-[17px] font-extrabold text-white transition-colors hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50",
-                                    children: "Next: Label photos"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(components)/upload/page.tsx",
-                                    lineNumber: 141,
-                                    columnNumber: 15
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/app/(components)/upload/page.tsx",
-                                lineNumber: 140,
-                                columnNumber: 13
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/app/(components)/upload/page.tsx",
-                        lineNumber: 109,
+                        lineNumber: 207,
                         columnNumber: 11
                     }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/app/(components)/upload/page.tsx",
-                lineNumber: 52,
-                columnNumber: 9
-            }, this)
-        }, void 0, false, {
+                }, void 0, false, {
+                    fileName: "[project]/app/(components)/upload/page.tsx",
+                    lineNumber: 206,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
             fileName: "[project]/app/(components)/upload/page.tsx",
-            lineNumber: 51,
+            lineNumber: 80,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/(components)/upload/page.tsx",
-        lineNumber: 50,
+        lineNumber: 79,
         columnNumber: 5
     }, this);
 }

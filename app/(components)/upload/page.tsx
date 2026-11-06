@@ -5,150 +5,177 @@ import React from "react";
 import axios from "axios";
 
 import { UploadIcon } from "../../_icons/uplaod-icon";
+import { StepShell, primaryBtn } from "../../_components/step-shell";
 
-const steps = [
-  { number: 1, label: "Upload" },
-  { number: 2, label: "Label" },
-  { number: 3, label: "Train" },
-];
+type UploadItem = {
+  id: string;
+  name: string;
+  status: "uploading" | "done" | "error";
+  url?: string;
+  error?: string;
+};
 
 export default function Upload() {
   const router = useRouter();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [items, setItems] = React.useState<UploadItem[]>([]);
+  const [dragging, setDragging] = React.useState(false);
 
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const files = Array.from(event.target.files ?? []);
+  const updateItem = (id: string, patch: Partial<UploadItem>) =>
+    setItems((prev) =>
+      prev.map((it) => (it.id === id ? { ...it, ...patch } : it)),
+    );
+
+  const uploadFiles = async (fileList: FileList | File[]) => {
+    const files = Array.from(fileList).filter((f) =>
+      f.type.startsWith("image/"),
+    );
     if (files.length === 0) return;
 
-    try {
-      const formData = new FormData();
-      files.forEach((file) => formData.append("files", file));
+    const newItems: UploadItem[] = files.map((file) => ({
+      id: crypto.randomUUID(),
+      name: file.name,
+      status: "uploading",
+    }));
+    setItems((prev) => [...newItems, ...prev]);
 
-      const response = await axios.post("/api/photos", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      console.log("Photo uploaded successfully:", response.data);
-    } catch (error) {
-      console.error("Error uploading photo:", error);
-    }
+    await Promise.all(
+      files.map(async (file, i) => {
+        const id = newItems[i].id;
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+          const { data } = await axios.post("/api/photos", formData);
+          updateItem(id, {
+            status: "done",
+            url: data.photo.imageUrl ?? data.photo.storagePath,
+          });
+        } catch (err) {
+          const message = axios.isAxiosError(err)
+            ? (err.response?.data?.error ?? err.message)
+            : "Upload failed";
+          console.error("Error uploading photo:", message);
+          updateItem(id, { status: "error", error: message });
+        }
+      }),
+    );
   };
 
-  const handleClick = () => {
-    router.push("/label");
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) uploadFiles(event.target.files);
+    event.target.value = ""; // allow re-selecting the same file
   };
 
-  const addPhoto = () => {
-    fileInputRef.current?.click();
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragging(false);
+    uploadFiles(event.dataTransfer.files);
   };
+
+  const uploading = items.some((it) => it.status === "uploading");
+  const doneCount = items.filter((it) => it.status === "done").length;
 
   return (
-    <div className="min-h-screen bg-[var(--page-bg)] px-4 py-6 sm:px-6 lg:px-10">
-      <div className="mx-auto max-w-6xl rounded-[24px] border border-[var(--surface-border)] bg-[var(--surface-card)] p-5 sm:p-6 lg:p-8">
-        <div className="rounded-[16px] border border-[var(--surface-border)] bg-[var(--surface-card-strong)] p-5 sm:p-6 lg:p-8">
-          <div className="mb-8 flex flex-col gap-4">
-            <div className="text-left">
-              <p className="font-bold uppercase tracking-[0.12em] text-[11px] sm:text-[14px] text-[var(--primary)]">
-                part 3 · training ground
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <h1 className="font-display text-[30px] leading-none tracking-[-0.04em] text-[var(--text)] sm:text-[40px]">
-                Upload training images
-              </h1>
-            </div>
-          </div>
-
-          <div className="mb-8 flex items-start justify-center sm:justify-between">
-            <div className="flex w-full max-w-2xl items-center justify-between gap-2 sm:gap-4">
-              {steps.map((step, index) => {
-                const isActive = index === 0;
-                const isCompleted = index < 1;
-
-                return (
-                  <div
-                    key={step.number}
-                    className="flex flex-1 flex-col items-center justify-center gap-2"
-                  >
-                    <div
-                      className={[
-                        "flex h-11 w-11 items-center justify-center rounded-full border text-sm font-extrabold transition-all sm:h-14 sm:w-14 sm:text-base",
-                        isActive
-                          ? "border-transparent bg-[var(--primary)] text-white"
-                          : isCompleted
-                            ? "border-transparent bg-[var(--primary)] text-white"
-                            : "border-[3px] border-[var(--surface-border)] bg-white text-[var(--muted)]",
-                      ].join(" ")}
-                    >
-                      {isCompleted ? "✓" : step.number}
-                    </div>
-
-                    <div className="hidden text-center sm:block">
-                      <p
-                        className={[
-                          "text-[11px] font-bold uppercase tracking-[0.08em]",
-                          isActive || isCompleted
-                            ? "text-[var(--text)]"
-                            : "text-[var(--muted)]",
-                        ].join(" ")}
-                      >
-                        {step.label}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="rounded-[16px] border border-[var(--surface-border)] bg-[var(--surface-card-strong)] p-4 sm:p-6">
-            <div
-              onClick={addPhoto}
-              className="group flex min-h-[260px] cursor-pointer flex-col items-center justify-center rounded-[20px] border-[3px] border-dashed border-[var(--surface-dashed)] bg-[#f8f9ff] px-5 py-8 text-center transition-colors duration-200 hover:border-[var(--primary)] hover:bg-[#f7f8ff] focus-within:border-[var(--primary)] focus-within:bg-[#f7f8ff] sm:min-h-[300px]"
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                onChange={handleFileChange}
-                accept="image/*"
-                multiple
-                className="hidden"
-              />
-
-              <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--info-bg)] text-[var(--primary)]">
-                <UploadIcon />
-              </div>
-
-              <h2 className="font-display text-[22px] leading-none tracking-[-0.04em] text-[var(--text)] sm:text-[26px]">
-                Upload your photos
-              </h2>
-              <p className="mt-3 max-w-md text-[16px] text-[var(--muted)] sm:text-[20px]">
-                Drop a few cat images here to begin training.
-              </p>
-            </div>
-
-            <div className="mt-6 rounded-[12px] bg-[var(--info-bg)] px-5 py-4 text-[15px] text-[var(--text)] sm:text-[16px]">
-              <span className="font-extrabold text-[var(--primary)]">Tip:</span>{" "}
-              Use clear, well-lit images to help the model learn faster.
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                onClick={handleClick}
-                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--primary)] px-6 py-3 text-[17px] font-extrabold text-white transition-colors hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Next: Label photos
-              </button>
-            </div>
-          </div>
+    <StepShell current={0} title="Upload training images">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => fileInputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click();
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
+        className={[
+          "flex min-h-[240px] cursor-pointer flex-col items-center justify-center rounded-[20px] border-[3px] border-dashed px-5 py-8 text-center transition-colors sm:min-h-[280px]",
+          dragging
+            ? "border-[var(--primary)] bg-[var(--info-bg)]"
+            : "border-[var(--surface-dashed)] bg-[var(--surface-card)] hover:border-[var(--primary)] hover:bg-[var(--info-bg)]",
+        ].join(" ")}>
+        <input
+          ref={fileInputRef}
+          type="file"
+          onChange={handleFileChange}
+          accept="image/*"
+          multiple
+          className="hidden"
+        />
+        <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--info-bg)] text-[var(--primary)]">
+          <UploadIcon />
         </div>
+        <h2 className="font-display text-[22px] leading-none tracking-[-0.03em] text-[var(--text)] sm:text-[26px]">
+          Upload your photos
+        </h2>
+        <p className="mt-3 max-w-md text-[15px] text-[var(--muted)] sm:text-[17px]">
+          Click or drag &amp; drop cat images here to begin training.
+        </p>
       </div>
-    </div>
+
+      {items.length > 0 && (
+        <section className="mt-6">
+          <p className="mb-3 text-[14px] font-bold text-[var(--muted)]">
+            {doneCount} of {items.length} uploaded
+          </p>
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {items.map((it) => (
+              <li
+                key={it.id}
+                className="overflow-hidden rounded-[12px] border border-[var(--surface-border)] bg-[var(--surface-card)]">
+                {it.status === "done" && it.url ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={it.url}
+                      alt={it.name}
+                      className="aspect-square w-full object-cover"
+                    />
+                    <div className="p-2">
+                      <a
+                        href={it.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block rounded-[10px] bg-[var(--primary)] px-4 py-2 text-center text-[14px] font-extrabold text-white hover:bg-[var(--primary-hover)]">
+                        Open
+                      </a>
+                    </div>
+                  </>
+                ) : (
+                  <div
+                    className={[
+                      "flex aspect-square items-center justify-center p-3 text-center text-[13px]",
+                      it.status === "error"
+                        ? "text-red-600"
+                        : "text-[var(--muted)]",
+                    ].join(" ")}>
+                    {it.status === "error"
+                      ? `${it.name}: ${it.error}`
+                      : "Uploading…"}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div className="mt-6 rounded-[12px] bg-[var(--info-bg)] px-5 py-4 text-[15px] text-[var(--text)]">
+        <span className="font-extrabold text-[var(--primary)]">Tip:</span> Use
+        clear, well-lit images to help the model learn faster.
+      </div>
+
+      <div className="mt-6 flex justify-end">
+        <button
+          type="button"
+          onClick={() => router.push("/label")}
+          disabled={uploading || doneCount === 0}
+          className={primaryBtn}>
+          {uploading ? "Uploading…" : "Next: Label photos"}
+        </button>
+      </div>
+    </StepShell>
   );
 }
