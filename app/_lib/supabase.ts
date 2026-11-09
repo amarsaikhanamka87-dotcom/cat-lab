@@ -1,10 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Server-only Supabase client used for Storage uploads.
-// Requires in .env:
-//   NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
-//   SUPABASE_SERVICE_ROLE_KEY=<service role key>   (or NEXT_PUBLIC_SUPABASE_ANON_KEY)
-//   SUPABASE_BUCKET=photos                          (optional, defaults to "photos")
 export const PHOTO_BUCKET = process.env.SUPABASE_BUCKET ?? "photos";
 
 export function getSupabaseAdmin() {
@@ -43,12 +38,10 @@ export async function withImageUrls<T extends { storagePath: string }>(
   photos: T[],
 ): Promise<(T & { imageUrl: string })[]> {
   if (photos.length === 0) return [];
-  const { data } = await supabase.storage
-    .from(PHOTO_BUCKET)
-    .createSignedUrls(
-      photos.map((p) => objectPathFromUrl(p.storagePath)),
-      60 * 60, // 1 hour
-    );
+  const { data } = await supabase.storage.from(PHOTO_BUCKET).createSignedUrls(
+    photos.map((p) => objectPathFromUrl(p.storagePath)),
+    60 * 60, // 1 hour
+  );
   return photos.map((p, i) => ({
     ...p,
     imageUrl: data?.[i]?.signedUrl ?? p.storagePath,

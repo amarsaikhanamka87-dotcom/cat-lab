@@ -23,10 +23,7 @@ export async function GET() {
   }
 }
 
-// POST: multipart/form-data with a "file" field.
-// 1. uploads the image to Supabase Storage
-// 2. saves the public image URL in the Photo table
-
+// Post: upload a new photo
 export async function POST(request: Request) {
   let file: FormDataEntryValue | null;
   try {
@@ -88,7 +85,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ photo: withUrl }, { status: 201 });
   } catch (error) {
     console.error("Photo database error:", error);
-    // roll back the orphaned file
+
     await supabase.storage.from(PHOTO_BUCKET).remove([path]);
     return NextResponse.json(
       { error: "Could not save photo. Check the database connection." },
@@ -97,9 +94,10 @@ export async function POST(request: Request) {
   }
 }
 
-// PATCH: set a photo's label. Body: { id: string, label: "CAT" | "NOT_CAT" | null }
 const LABELS = ["CAT", "NOT_CAT"] as const;
 type PhotoLabel = (typeof LABELS)[number];
+
+// PATCH REQUEST
 
 export async function PATCH(request: Request) {
   let body: { id?: unknown; label?: unknown };
@@ -138,8 +136,19 @@ export async function PATCH(request: Request) {
 // DELETE REQUEST
 export async function DELETE(request: Request) {
   const body = await request.json();
-  console.log("DELETE body:", body);
-  return new Response("Hello, this is the photos DELETE route!", {
-    status: 200,
-  });
+  console.log("DELETE body:   aaaaaaa", body);
+  try {
+    const deletedPhoto = await prisma.photo.delete({
+      where: { id: body.id },
+    });
+    return NextResponse.json({
+      message: "Photo deleted successfully",
+      photo: deletedPhoto,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Could not delete photo (photo not found?)" },
+      { status: 404 },
+    );
+  }
 }

@@ -6,6 +6,7 @@ import axios from "axios";
 
 import { UploadIcon } from "../../_icons/uplaod-icon";
 import { StepShell, primaryBtn } from "../../_components/step-shell";
+import { PixelView } from "../../_components/pixel-view";
 
 type UploadItem = {
   id: string;
@@ -120,19 +121,25 @@ export default function Upload() {
           <p className="mb-3 text-[14px] font-bold text-[var(--muted)]">
             {doneCount} of {items.length} uploaded
           </p>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((it) => (
               <li
                 key={it.id}
                 className="overflow-hidden rounded-[12px] border border-[var(--surface-border)] bg-[var(--surface-card)]">
                 {it.status === "done" && it.url ? (
                   <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={it.url}
-                      alt={it.name}
-                      className="aspect-square w-full object-cover"
-                    />
+                    <div className="grid grid-cols-2 gap-1 p-2 pb-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={it.url}
+                        alt={it.name}
+                        className="aspect-square w-full rounded-[8px] object-cover"
+                      />
+                      <div className="flex items-center justify-center text-center text-[11px] font-bold uppercase text-[var(--muted)]">
+                        photo → pixels
+                      </div>
+                    </div>
+                    <PixelView url={it.url} />
                     <div className="p-2">
                       <a
                         href={it.url}

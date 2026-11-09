@@ -79,6 +79,26 @@ const LabelPage = () => {
 
   const labeled = photos.filter((p) => p.label).length;
 
+  //delete req
+
+  const deleteBtn = async (photo: Photo) => {
+    console.log("deleteBtn clicked for photo:", photo);
+
+    try {
+      const { data } = await axios.delete("/api/photos", {
+        data: { id: photo.id },
+      });
+      console.log("data from delete request:", data);
+      setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+    } catch (err) {
+      setError(
+        axios.isAxiosError(err)
+          ? (err.response?.data?.error ?? err.message)
+          : "Could not delete photo",
+      );
+    }
+  };
+
   return (
     <StepShell current={1} title="Tell the model what each photo is">
       {loading && <p className="text-[var(--muted)]">Loading photos…</p>}
@@ -104,10 +124,11 @@ const LabelPage = () => {
             {photos.map((photo) => (
               <li
                 key={photo.id}
-                className="overflow-hidden rounded-[12px] border border-[var(--surface-border)] bg-[var(--surface-card)]"
-              >
-                <a href={photo.imageUrl ?? photo.storagePath} target="_blank" rel="noreferrer">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                className="overflow-hidden rounded-[12px] border border-[var(--surface-border)] bg-[var(--surface-card)]">
+                <a
+                  href={photo.imageUrl ?? photo.storagePath}
+                  target="_blank"
+                  rel="noreferrer">
                   <img
                     src={photo.imageUrl ?? photo.storagePath}
                     alt="Uploaded photo"
@@ -115,6 +136,12 @@ const LabelPage = () => {
                     className="aspect-square w-full object-cover"
                   />
                 </a>
+                <button
+                  type="button"
+                  className="bg-red-600 px-2 text-white"
+                  onClick={() => deleteBtn(photo)}>
+                  X
+                </button>
                 <div className="grid grid-cols-2 gap-2 p-2">
                   {LABEL_OPTIONS.map((opt) => (
                     <button
@@ -127,8 +154,7 @@ const LabelPage = () => {
                         photo.label === opt.value
                           ? opt.active
                           : "border-[var(--surface-border)] bg-[var(--surface-card-strong)] text-[var(--text)] hover:bg-[var(--info-bg)]",
-                      ].join(" ")}
-                    >
+                      ].join(" ")}>
                       {opt.text}
                     </button>
                   ))}
@@ -143,16 +169,14 @@ const LabelPage = () => {
         <button
           type="button"
           onClick={() => router.push("/upload")}
-          className={secondaryBtn}
-        >
+          className={secondaryBtn}>
           Back
         </button>
         <button
           type="button"
           onClick={() => router.push("/train")}
           disabled={photos.length === 0 || labeled < photos.length}
-          className={primaryBtn}
-        >
+          className={primaryBtn}>
           Continue
         </button>
       </div>
