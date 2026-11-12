@@ -36,3 +36,13 @@ model Photo {
   ground      Ground    @default(training)
   creativeAt  DateTime @default(now())
 }
+
+
+model TrainingRun {
+  id        String   @id @default(uuid())
+  rounds    Int
+  accuracy  Float    // 0 to 1
+  createdAt DateTime @default(now())
+
+  @@map("training_runs")
+}

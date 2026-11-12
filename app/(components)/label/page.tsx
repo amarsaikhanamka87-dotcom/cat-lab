@@ -8,6 +8,9 @@ import {
   primaryBtn,
   secondaryBtn,
 } from "../../_components/step-shell";
+import { buildModel } from "../../_features/model/build-model";
+import { describeModel } from "../../_features/model/describe-model";
+import { savePrep } from "../../_features/prep/save-prep";
 
 type Label = "CAT" | "NOT_CAT";
 
@@ -98,6 +101,27 @@ const LabelPage = () => {
       );
     }
   };
+
+  const modelInfo = React.useMemo(() => {
+    const model = buildModel();
+    const info = describeModel(model);
+    model.dispose(); // free GPU memory; we only needed the summary
+    return info;
+  }, []);
+
+  React.useEffect(() => {
+    savePrep({
+      photos: photos
+        .filter((p) => p.label)
+        .map((p) => ({
+          url: p.imageUrl ?? p.storagePath,
+          isCat: p.label === "CAT",
+        })),
+      finders: [],
+      ...modelInfo,
+    });
+    console.log("modelInfo saved:", modelInfo);
+  }, [photos, modelInfo]);
 
   return (
     <StepShell current={1} title="Tell the model what each photo is">

@@ -7,10 +7,30 @@ import {
 } from "@/app/_lib/supabase";
 import { NextResponse } from "next/server";
 
-// GET: list all photos
-export async function GET() {
+const GROUNDS = ["training", "testing"] as const;
+type Ground = (typeof GROUNDS)[number];
+
+const isGround = (value: string): value is Ground =>
+  (GROUNDS as readonly string[]).includes(value);
+
+// About 1 in 5 uploads is kept back for testing; the model never trains on it.
+const TEST_SHARE = 0.2;
+const pickGround = (): Ground =>
+  Math.random() < TEST_SHARE ? "testing" : "training";
+
+// GET: list photos, optionally filtered with ?ground=training|testing
+export async function GET(request: Request) {
+  const ground = new URL(request.url).searchParams.get("ground");
+  if (ground !== null && !isGround(ground)) {
+    return NextResponse.json(
+      { error: `ground must be one of: ${GROUNDS.join(", ")}` },
+      { status: 400 },
+    );
+  }
+
   try {
     const photos = await prisma.photo.findMany({
+      where: ground ? { ground } : undefined,
       orderBy: { creativeAt: "desc" },
     });
     return NextResponse.json(await withImageUrls(getSupabaseAdmin(), photos));
@@ -79,7 +99,7 @@ export async function POST(request: Request) {
 
   try {
     const photo = await prisma.photo.create({
-      data: { storagePath: publicUrl },
+      data: { storagePath: publicUrl, ground: pickGround() },
     });
     const [withUrl] = await withImageUrls(supabase, [photo]);
     return NextResponse.json({ photo: withUrl }, { status: 201 });
